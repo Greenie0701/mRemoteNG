@@ -34,14 +34,17 @@ jobs:
           dotnet tool install --global dotnet-t4
           # Refresh PATH to include global tools
           $env:PATH += ";$env:USERPROFILE\.dotnet\tools"
+          # Set platform environment variable
+          $env:PLATFORM_TYPE = "${{ matrix.platform }}"
       
           $ttFile = "$env:GITHUB_WORKSPACE\mRemoteNG\Properties\AssemblyInfo.tt"
           $outputFile = "$env:GITHUB_WORKSPACE\mRemoteNG\Properties\AssemblyInfo.cs"
       
           Write-Host "Transforming T4 template with platform: ${{ matrix.platform }}"
+          Write-Host "PLATFORM_TYPE environment variable: $env:PLATFORM_TYPE"
           
-          # Transform T4 template with parameter (note: parameter name matches template)
-          t4 $ttFile -p platformType="${{ matrix.platform }}" -o $outputFile
+          # Transform T4 template (environment variable will be picked up)
+          t4 $ttFile -o $outputFile
           
           # Verify the file was created
           if (Test-Path $outputFile) {
