@@ -32,22 +32,29 @@ jobs:
         shell: pwsh
         run: |
           dotnet tool install --global dotnet-t4
-
           # Refresh PATH to include global tools
           $env:PATH += ";$env:USERPROFILE\.dotnet\tools"
       
-          $interopPath = "$env:GITHUB_WORKSPACE\mRemoteNG\libs\Microsoft.VisualStudio.Interop.dll"
           $ttFile = "$env:GITHUB_WORKSPACE\mRemoteNG\Properties\AssemblyInfo.tt"
+          $outputFile = "$env:GITHUB_WORKSPACE\mRemoteNG\Properties\AssemblyInfo.cs"
       
-          Write-Host "Transforming T4 template"
-          t4 $ttFile -P platformType=${{ matrix.platform }}
+          Write-Host "Transforming T4 template with platform: ${{ matrix.platform }}"
+          
+          # Transform T4 template with parameter (note: parameter name matches template)
+          t4 $ttFile -p platformType="${{ matrix.platform }}" -o $outputFile
+          
+          # Verify the file was created
+          if (Test-Path $outputFile) {
+              Write-Host "AssemblyInfo.cs generated successfully"
+              Write-Host "File content preview:"
+              Get-Content $outputFile | Select-Object -First 10
+          } else {
+              Write-Error "Failed to generate AssemblyInfo.cs"
+              exit 1
+          }
         env:
           PLATFORM: '${{ matrix.platform }}'
 
-
-
-
-  
       - name: (04) Cache NuGet Packages
         uses: actions/cache@v4
         with:
