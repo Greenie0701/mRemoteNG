@@ -2,7 +2,7 @@ name: Build_and_Release_mR-NB
 on:
   push:
     branches:
-      - v1.78.2-dev
+      - fix_ci
       
 permissions:
   contents: write
@@ -32,19 +32,19 @@ jobs:
         shell: pwsh
         run: |
           dotnet tool install --global dotnet-t4
-
           # Refresh PATH to include global tools
           $env:PATH += ";$env:USERPROFILE\.dotnet\tools"
       
           $interopPath = "$env:GITHUB_WORKSPACE\mRemoteNG\libs\Microsoft.VisualStudio.Interop.dll"
           $ttFile = "$env:GITHUB_WORKSPACE\mRemoteNG\Properties\AssemblyInfo.tt"
       
+          # VS Enterprise 2022 PublicAssemblies path
+          $vsPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\PublicAssemblies"
+      
           Write-Host "Transforming T4 template"
-          t4 $ttFile -P platformType=${{ matrix.platform }}
+          t4 $ttFile -P platformType=${{ matrix.platform }} -r:"$vsPath\envdte.dll"
         env:
           PLATFORM: '${{ matrix.platform }}'
-
-
 
 
   
